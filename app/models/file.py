@@ -665,9 +665,10 @@ class File(Document):
             unset__safe_result_id=1,
             unset__safe_start_time=1,
         )
-        # 生成用于保存的名称
+        # 生成用于保存的名称（在文件名前加当天日期文件夹）
         filename = Filename(self.name)
-        save_name = str(ObjectId()) + "." + filename.suffix
+        date_folder = datetime.datetime.utcnow().strftime("%Y%m%d") + "/"
+        save_name = date_folder + str(ObjectId()) + "." + filename.suffix
         # 文件md5
         md5 = get_file_md5(real_file)
         # 文件大小
