@@ -22,6 +22,9 @@ if TYPE_CHECKING:
 class Output(Document):
     """项目的导出"""
 
+    # 此日期之后创建的导出使用带日期文件夹的 OSS 路径
+    OSS_DATE_FOLDER_CUTOFF = datetime.datetime(2026, 7, 18)
+
     project = ReferenceField("Project", db_field="p", required=True)
     target = ReferenceField("Target", db_field="t", required=True)
     user = ReferenceField("User", db_field="u")  # 操作人
@@ -31,6 +34,20 @@ class Output(Document):
     create_time = DateTimeField(db_field="ct", default=datetime.datetime.utcnow)
     file_ids_include = ListField(ObjectIdField(), default=list)
     file_ids_exclude = ListField(ObjectIdField(), default=list)
+
+    @property
+    def oss_dir(self):
+        """OSS 存储目录：prefix/[YYYYMMDD/]output_id/"""
+        prefix = current_app.config["OSS_OUTPUT_PREFIX"]
+        if self.create_time >= self.OSS_DATE_FOLDER_CUTOFF:
+            return (
+                prefix
+                + self.create_time.strftime("%Y%m%d")
+                + "/"
+                + str(self.id)
+                + "/"
+            )
+        return prefix + str(self.id) + "/"
 
     @classmethod
     def create(
@@ -59,12 +76,17 @@ class Output(Document):
         try:
             oss.delete(
                 current_app.config["OSS_OUTPUT_PREFIX"],
-                [str(output.id) + "/" + output.file_name for output in outputs],
+                [output.create_time.strftime("%Y%m%d") + "/" + str(output.id) + "/" + output.file_name
+                 if output.create_time >= cls.OSS_DATE_FOLDER_CUTOFF
+                 else str(output.id) + "/" + output.file_name
+                 for output in outputs],
             )
             oss.rmdir(
                 [
                     os.path.join(
-                        current_app.config["OSS_OUTPUT_PREFIX"], str(output.id)
+                        current_app.config["OSS_OUTPUT_PREFIX"],
+                        *([output.create_time.strftime("%Y%m%d")] if output.create_time >= cls.OSS_DATE_FOLDER_CUTOFF else []),
+                        str(output.id),
                     )
                     for output in outputs
                 ],
@@ -76,10 +98,7 @@ class Output(Document):
 
     def delete_real_file(self):
         try:
-            oss.delete(
-                current_app.config["OSS_OUTPUT_PREFIX"] + str(self.id) + "/",
-                self.file_name,
-            )
+            oss.delete(self.oss_dir, self.file_name)
         except oss2.exceptions.NoSuchKey as e:
             logger.error(e)
         except Exception as e:
@@ -110,7 +129,7 @@ class Output(Document):
         }
         if self.status == OutputStatus.SUCCEEDED:
             data["link"] = oss.sign_url(
-                current_app.config["OSS_OUTPUT_PREFIX"] + str(self.id) + "/",
+                self.oss_dir,
                 self.file_name,
                 download=True,
             )

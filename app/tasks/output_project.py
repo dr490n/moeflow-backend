@@ -67,6 +67,15 @@ def output_project_task(output_id):
     zip_download_name = download_name + ".zip"
     txt_name = str(output.id) + ".txt"  # 翻译文本名（当仅导出翻译文本的时候使用）
     txt_download_name = download_name + ".txt"
+    # OSS 存储路径：prefix/YYYYMMDD/output_id/
+    oss_output_dir = (
+        os.path.join(
+            celery.conf.app_config["OSS_OUTPUT_PREFIX"],
+            output.create_time.strftime("%Y%m%d"),
+            str(output.id),
+        )
+        + "/"
+    )
     # PS脚本和其资源文件夹 原位置
     ps_script_path = os.path.abspath(
         os.path.join(FILE_PATH, "ps_script", "ps_script.jsx")
@@ -119,10 +128,7 @@ def output_project_task(output_id):
             output.update(file_name=txt_download_name)
             with open(zip_translations_txt_path, "rb") as txt:
                 oss.upload(
-                    os.path.join(
-                        celery.conf.app_config["OSS_OUTPUT_PREFIX"], str(output.id)
-                    )
-                    + "/",
+                    oss_output_dir,
                     txt_download_name,
                     txt,
                     headers={"Content-Disposition": 'attachment;"'.encode("utf8")},
@@ -194,10 +200,7 @@ def output_project_task(output_id):
             with open(zip_path, "rb") as zip_file:
                 output.update(file_name=zip_download_name)
                 oss.upload(
-                    os.path.join(
-                        celery.conf.app_config["OSS_OUTPUT_PREFIX"], str(output.id)
-                    )
-                    + "/",
+                    oss_output_dir,
                     zip_download_name,
                     zip_file,
                     headers={"Content-Disposition": 'attachment;"'.encode("utf8")},
