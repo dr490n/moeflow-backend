@@ -1,6 +1,7 @@
 import logging
 import celery
 from flask import Flask
+from flask_cors import CORS
 from flask_apikit import APIKit
 from flask_babel import Babel
 from app.core.rbac import AllowApplyType, ApplicationCheckType
@@ -43,6 +44,14 @@ def create_flask_app(app: Flask) -> Flask:
 
 def init_flask_app(app: Flask):
     register_apis(app)
+    # CORS 跨域支持
+    CORS(
+        app,
+        origins=app.config.get("CORS_ORIGINS", []),
+        supports_credentials=True,
+        methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "X-Requested-With"],
+    )
     babel.init_app(
         app,
         locale_selector=app_translations.get_locale,

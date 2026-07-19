@@ -85,8 +85,8 @@ SAFE_ACCESS_KEY_SECRET = "-"
 # -----------
 OSS_FILE_PREFIX = "files/"
 OSS_OUTPUT_PREFIX = "outputs/"
-OSS_USER_AVATAR_PREFIX = "user-avatars/"
-OSS_TEAM_AVATAR_PREFIX = "team-avatars/"
+OSS_USER_AVATAR_PREFIX = "avatars/user/"
+OSS_TEAM_AVATAR_PREFIX = "avatars/team/"
 # -----------
 # 谷歌接口
 # -----------
@@ -143,6 +143,16 @@ CELERY_BACKEND_SETTINGS = {
         "taskmeta_collection": "celery_taskmeta",
     }
 }
+# -----------
+# CORS 跨域配置
+# -----------
+# 允许跨域访问的前端域名列表，多个用英文逗号分隔
+# 例如: "https://site.example.com,https://admin.example.com"
+CORS_ORIGINS = [
+    origin.strip()
+    for origin in env.get("CORS_ORIGINS", "").split(",")
+    if origin.strip()
+]
 # -----------
 # APIKit
 # -----------
