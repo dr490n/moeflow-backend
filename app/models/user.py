@@ -238,8 +238,9 @@ class User(Document):
             "locale": Locale.to_api(id=self.locale),
             "admin": self.admin,
         }
-        if g.get("current_user") and g.get("current_user").admin:
-            data = {**data, **{"email": self.email}}
+        current_user = g.get("current_user")
+        if current_user and (current_user.id == self.id or current_user.admin):
+            data["email"] = self.email
         return data
 
     # =====团队操作=====
