@@ -3,6 +3,7 @@
 """
 
 from bson import ObjectId
+import datetime
 from flask import current_app, request
 
 from app import oss
@@ -56,7 +57,8 @@ class AvatarAPI(MoeAPIView):
             raise RequestDataWrongError(lazy_gettext("不支持的头像类型"))
         if owner_type != "user" and owner_id is None:
             raise RequestDataWrongError(lazy_gettext("缺少id"))
-        filename = str(ObjectId()) + ".jpg"
+        date_folder = datetime.datetime.utcnow().strftime("%Y%m%d") + "/"
+        filename = date_folder + str(ObjectId()) + ".jpg"
         oss.upload(avatar_prefix, filename, file)
         # 删除旧的头像
         if avatar_owner.has_avatar():
