@@ -23,7 +23,7 @@ class Output(Document):
     """项目的导出"""
 
     # 此日期之后创建的导出使用带日期文件夹的 OSS 路径
-    OSS_DATE_FOLDER_CUTOFF = datetime.datetime(2026, 7, 18)
+    OSS_DATE_FOLDER_CUTOFF = datetime.datetime(2026, 8, 1)
 
     project = ReferenceField("Project", db_field="p", required=True)
     target = ReferenceField("Target", db_field="t", required=True)
@@ -37,12 +37,12 @@ class Output(Document):
 
     @property
     def oss_dir(self):
-        """OSS 存储目录：prefix/[YYYYMMDD/]output_id/"""
+        """OSS 存储目录：prefix/[YYYY-MM/]output_id/"""
         prefix = current_app.config["OSS_OUTPUT_PREFIX"]
         if self.create_time >= self.OSS_DATE_FOLDER_CUTOFF:
             return (
                 prefix
-                + self.create_time.strftime("%Y%m%d")
+                + self.create_time.strftime("%Y-%m")
                 + "/"
                 + str(self.id)
                 + "/"
@@ -76,7 +76,7 @@ class Output(Document):
         try:
             oss.delete(
                 current_app.config["OSS_OUTPUT_PREFIX"],
-                [output.create_time.strftime("%Y%m%d") + "/" + str(output.id) + "/" + output.file_name
+                [output.create_time.strftime("%Y-%m") + "/" + str(output.id) + "/" + output.file_name
                  if output.create_time >= cls.OSS_DATE_FOLDER_CUTOFF
                  else str(output.id) + "/" + output.file_name
                  for output in outputs],
@@ -85,7 +85,7 @@ class Output(Document):
                 [
                     os.path.join(
                         current_app.config["OSS_OUTPUT_PREFIX"],
-                        *([output.create_time.strftime("%Y%m%d")] if output.create_time >= cls.OSS_DATE_FOLDER_CUTOFF else []),
+                        *([output.create_time.strftime("%Y-%m")] if output.create_time >= cls.OSS_DATE_FOLDER_CUTOFF else []),
                         str(output.id),
                     )
                     for output in outputs

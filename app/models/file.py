@@ -667,7 +667,7 @@ class File(Document):
         )
         # 生成用于保存的名称（在文件名前加当天日期文件夹）
         filename = Filename(self.name)
-        date_folder = datetime.datetime.utcnow().strftime("%Y%m%d") + "/"
+        date_folder = datetime.datetime.utcnow().strftime("%Y-%m") + "/"
         save_name = date_folder + str(ObjectId()) + "." + filename.suffix
         # 文件md5
         md5 = get_file_md5(real_file)

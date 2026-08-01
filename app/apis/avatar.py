@@ -57,7 +57,7 @@ class AvatarAPI(MoeAPIView):
             raise RequestDataWrongError(lazy_gettext("不支持的头像类型"))
         if owner_type != "user" and owner_id is None:
             raise RequestDataWrongError(lazy_gettext("缺少id"))
-        date_folder = datetime.datetime.utcnow().strftime("%Y%m%d") + "/"
+        date_folder = datetime.datetime.utcnow().strftime("%Y-%m") + "/"
         filename = date_folder + str(ObjectId()) + ".jpg"
         oss.upload(avatar_prefix, filename, file)
         # 删除旧的头像
