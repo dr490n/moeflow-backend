@@ -67,11 +67,11 @@ def output_project_task(output_id):
     zip_download_name = download_name + ".zip"
     txt_name = str(output.id) + ".txt"  # 翻译文本名（当仅导出翻译文本的时候使用）
     txt_download_name = download_name + ".txt"
-    # OSS 存储路径：prefix/YYYYMMDD/output_id/
+    # OSS 存储路径：prefix/YYYY-MM/output_id/
     oss_output_dir = (
         os.path.join(
             celery.conf.app_config["OSS_OUTPUT_PREFIX"],
-            output.create_time.strftime("%Y%m%d"),
+            output.create_time.strftime("%Y-%m"),
             str(output.id),
         )
         + "/"
