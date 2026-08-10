@@ -3,6 +3,7 @@
 """
 
 import email
+import logging
 import smtplib
 from email.header import Header
 from email.mime.multipart import MIMEMultipart
@@ -11,6 +12,8 @@ from email.mime.text import MIMEText
 from flask import render_template
 
 from app import celery
+
+logger = logging.getLogger(__name__)
 
 
 @celery.task(name="tasks.email_task", time_limit=35)
@@ -109,6 +112,12 @@ def send_email(
     if template:
         html_content = render_template(template + ".html", **template_data)
         text_content = render_template(template + ".txt", **template_data)
+    logger.info(
+        "Submitting email_task to_address=%s subject=%s template=%s",
+        to_address,
+        subject,
+        template,
+    )
     email_task.delay(
         to_address,
         subject,

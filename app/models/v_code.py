@@ -312,7 +312,7 @@ class VCode(Document):
         }
         if self.type not in email_subject_dict or self.type not in email_template_dict:
             raise RuntimeError("VCode({}) don't have email template".format(self.type))
-        if current_app.config["DEBUG"] or current_app.config["TESTING"]:
+        if current_app.config["TESTING"]:
             self.to_log("email", address)
         else:
             send_email(

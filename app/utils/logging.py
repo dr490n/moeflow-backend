@@ -58,21 +58,14 @@ def configure_root_logger(override: Optional[str] = None):
     if _logger_configured:
         raise AssertionError("configure_root_logger already executed")
     _logger_configured = True
-    logging.debug(
-        "configuring root logger %s %s",
-        root_logger.level,
-        root_logger.getEffectiveLevel(),
-    )
-    level = override or os.environ.get("LOG_LEVEL")
-    if not level:
-        return
+    level = override or os.environ.get("LOG_LEVEL", "INFO")
     logging.basicConfig(
         format="[%(asctime)s] %(levelname)s %(name)s %(message)s",
         datefmt="%Y-%m-%dT%H:%M:%S%z",
-        force=True,  # why the f is this required?
+        force=True,
         level=getattr(logging, level.upper()),
     )
-    logging.debug("reset log level %s", level)
+    logging.getLogger(__name__).debug("reset log level %s", level)
 
 
 def configure_extra_logs(app: Flask):
